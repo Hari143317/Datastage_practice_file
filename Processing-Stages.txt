@@ -1,0 +1,473 @@
+Copy Stage:
+1.It is a processing stage
+2.It will support 1 I/P and any number of O/P.
+3. It is having options as Force = False [Default]
+   If i try to change Force= True [ when i have 1 O/P link performance ]
+Functinlaties
+A.It is mainly used for to modify the name of the columns, to modify the datatype of the columns.
+B.We can delete the columns which are coming from the source.
+C.we can add the new columns as well with source columns.
+-------------------------------------------------------------------------------------------------------------
+Remove Duplicte Stage:
+1.It is processing satge.
+2.It will support 1 I/P and 1 O/P and there is NO Reject link.
+3.It is mainly used to delete the duplicate records based on your key column and the data should be in sorted order.
+4.It will delete the duplicates with one option called "Duplicates Retains=1.First [Defaults] 2.Last "
+     Duplicates retains from first or lsat
+	 Ex: NO          NO[Sort Data]     O/P{first]   O/P[Last]      
+	     10          10                 10   
+	     10          10
+		 20          10                                 10
+		 10          20                 20
+		 20          20                                 20
+		 30          30                 30              30
+-------------------------------------------------------------------------------------------------------------------------------
+Sort Stage:
+1.It is a processing stage.
+2.it will support 1 I/P and 1 O/P and there is no reject link.
+3.To sort the data we need sort key column.
+4.We can delete the duplicates in Sort stage as well in options tab: Allow Duplicates = False {Default=True}.
+5.we can filter the data by enablingin options:  create key change column= yes  {Default: False} then you can connect the filter stage and we can 
+  write where clause condition.
+   B) We can find out the duplicates by enabling Create key change column = true. It will create new column with 'key change()'
+          Key change = 1 [Unique]
+		  Key change = 0 [Duplicate]
+		  Ex: Ex: NO          Key cahnge           
+	     10          10             1  
+	     10          10             0
+		 20          10             0                         
+		 10          20             1                
+		 20          20             0                    
+		 30          30             1 
+Q1) What is the difference b/w link sort and the sort stage?
+Ans: link sort and sort stage functionality wise it is same but where as in sort stage we have few more options compared to link sort.
+      sort
+      A) when we have volume of data is more we should use sort.
+	  B) We can handle Amount of memory to be used in sort default 20MB. 
+Q2) what is the difference b/w remove dupliacte stage and sort stage?
+Ans: In Duplicate stage we can reatin the duplicate data either first or last based on the  option:  Dupliactes retains = First(Default) or Last
+     In sort stage we can reatin the data from first we don't have option to retain from last.
+Q3) How many ways we can delete the duplicates?
+Ans: 1.Remove duplicate stage----> based on colun and duplicates retails is first or last 2. sort stage -->options--->Allow duplicates = False 3.link sort --> partition--->perform sort enable-->unique 4.Transformer stage 5.filter stage where cluase conditon with keychange 6. sequential file -->fileter
+-->unix command [sort -u] 7. DB ---> select distinct column name from table name
+
+		 
+--------------------------------------------------------------------------------------
+Filter Stage:
+1.It is a processing stage
+2. It supports 1 I/P and any number of O/P links and 1 optional reject link
+3.To filter the data we need to write "WHERE Cluase" condition.
+4.The Number of O/P links should be equal to number of WHERE Clause condition.
+5.we can write WHERE clause conditon on any number of columns.
+-----------------------------------------------------------------------------------------------
+Switch Stage:
+1.It is a processing Stage
+2.It suports 1 I/P link and upto 128 O/P links and 1 optional reject link.
+3. switch stage is used to write CASE condition.
+4.We can write upto 128 case condition but on single column, if you want write CASE condition on another column then we need to used another switch stage.
+4. The Number of O/P links should be equal to the number of CASE conditions.
+5.In switch case condition we will give the value only without any mathematical functions like >=,<== and we won't procide column name inside the case condition.
+
+Q) What is the difference b/w Switch stage and filter stage?
+Ans: Filter WHERE clause condition, SWITCH for CASE condition.
+     We can write number of where lause condition on any number of columns and where as in switch stage we can write any number of CASE condition but 
+	 on single column.
+------------------------------------------------------------------------
+Funnel Stage:
+1. It is a processing stage.
+2. It supports any number of I/P links andonly 1 O/P link and there is NO reject link.
+3. When we have NAME of the COLUMNS and NUMBER of the COLUMNS should be equal then only we will use FUNNEL STAGE.
+4. So we call Structured data in funnel stage.
+5. There are 3 types of funnels which we have in FUNNEL Stage. 
+     A) Sequence Funnel: Based on link ordering the data will loaded to the target
+	 B) Sort Funnel: Based up on the key column the data will joined and loaded into the targe:
+	 C) Continuous funnel: which ever record hits the funnel stage first that will be loaded into target.
+	 
+	 EX:  file1  --->1st link     file2 --->2nd link
+	   Key-->eid ename sal             eid ename sal
+	       101 nag 200               102 Arjun 300
+6. In oracle we call it as SET Opertors.		   
+--------------------------------------------------------------------------------------------------------------
+CDC{Change Capture Stage]: 
+1. It will support 2 I/P links ie:[Before data, After data] and 1 O/P link & there is NO reject link.
+2. to implement this we need to know the changed columns[Ex:loc]
+3. To work on this changed columns we have an option called "CHANGE MODE: 1. Explicity keys & Explicity values  2. Explicity Keys & All Values 3. All Keys & Explicity values"
+4. To find out the changes we will be having a column "change_code= 0:copy 1:insert 3:Update 2:Delete"
+5: We can modify the change codes based on our requirement.
+
+SCD impleenations [ SCD1 , scd2, scd3]
+Daily Load, Monthly Loads, Querterly Load, Yearly & Adhoc
+Sbi: Address, tranasactions, salry crdeits, 
+SCD1:[Slowly Changing Dimentions]1-
+1.It maintains Only CURRENT data means it will update the current record into previous record.
+Ex: Bhartwaz under capgemini-- Hyderabad from 2017 , he moved the location from hyb-- ban
+source file
+ename|location|year
+Bhartwaz|hyd|2018
+"       |Ban|2019
+
+Target: 
+"       |Ban|2019
+
+SCD2:
+1.It maints CURRENT and HISTORICAL data
+2.To develop SCD2 implementation we need to follow some pre-requesites.
+  A} Surrogate key
+  B} Start_date
+  C} End_Date
+  D} Current_Flag
+  E}Version_number
+Source:
+Surroagte Key|ename|location|Startdate|Endate|CurrentFlag|versionNumber|
+1|Bhartwaz|hyd|2018-09-12|2019-08-09|N|0
+2|"       |Ban|2019-08-10|2020-04-17|N|1
+3|"       |Che|2020-04-18|2021-10-08|N|2
+4|"       |Pun|2021-10-09|9999-12-0|Y|3
+
+SCD3:
+1.It will maintain current and previous record.
+2.It will create new coulmn when we started scd3.
+
+eid|name|current record|previous record|
+101|Bhartwaz|mumbai|ban.
+
+-------------------------------------------------------------------------------------------
+Aggregator Stage:
+1. It supports 1 I/P link and 1 O/P link and it will not support any reject link.
+2. It is used for the mathematical caluculations like[Max, Min,Avg] and as well as count rows.
+***3. Aggreator stage will be having one option to aggreagte the values based on the "Aggregator METHOD= Sort / HASH[Default]"  
+   A} HASH:Grouping the same data and processing it into target nearly it will support only small number of groups like 1000 groups
+   B} SORT: When you have volume of data more and number of groups are more then we use SORT Method.
+Q) What is the default Data_type of Aggregator calaculation columns?
+Ans: Double.
+-----------------------------------------------------------------------------------------------------------------------------------------
+Pivot_Stage:
+1.It is a processing stage.
+2.It supports 1 I/P link , 1 O/P link there is NO reject link.
+3. There are 2 types of PIvots can be done.
+   A} Vertical Pivot: Converting rows to columns
+   B} Horizontal_Pivot: Converting columns to Rows.
+4. We have Pivot_Index function which acts for mainly vertical Pivot to provide the number of columns that data is geeting converted..
+5. In vertical pivot we can do Mathematical functions like[max,min,avg,first_value].
+Product|color
+pen|red
+pen|black
+pen|blue
+book|white
+book|blue
+book|yellow
+
+verticalpivot: product|color1|color2|color3
+------------------------------------------------------------------------------------------------------------------
+Modify Stage:
+1. It is a processing stage.
+2.It supports 1 I/P , 1 O/P link and NO reject link.
+3. In modify stage we can DROP the column which are not required, We can KEEP the columns which are required, we can modify the column names, we can modify the datatypes of that columns and we can handle the null values.
+------------------------------------------------------------------------------------------------------------------
+Surroagte Key Generator Stage:
+1.It is a processing stage
+2.It supports 1 I/P , 1 O/P link and NO reject link.
+3. It is mainly used to generate unique sequnce number for SCD 2 implementation.
+4.To generate surroagte keys number we need to create a file and need to provide intial value and the incremental value.
+----------------------------------------------------------------------------------------------------------------------------------------
+Join Stage:
+1.It is a processing stage
+2. It Supports any Number of I/P links and 1 O/P link and NO reject link.
+3. It supports all types of joins. A) Left outer join B) Right Outer Join C)Inner Join D) Full Outer JOin[It supports only 2 I/P links].
+4. In Join stage link ordering is must and should follow,
+    A) First link which connected to join stage will be acting as Left link.
+	B) Last Link which is connected to join stage will be acting as Right link.
+	C) In between 1st link and last link we call it as Intermediate links.
+5.We will be working on Unstructured data.
+6. Data should be in sorted  order and key column is mandatory.
+7.Types of Joins:
+Ex: tableA
+     ID
+     1
+	 1
+	 1
+	 1
+	 2
+	 tableB
+	 ID
+	 1
+	 1
+	 1
+	 3
+ A) Left outer join/left join: It will give Matching records from both the tables and unmatched records from the Left table.
+ 
+                            o/p: 1 1 1 1 1 1 1 1 1 1 1 1 2
+ B) Inner Join: It will give matching rexords rom both tables.
+                          O/P:  1 1 1 1 1 1 1 1 1 1 1 1
+ C) Right outer join/Right Join: It will give matching records from both the atbles and unmatched records from the Right table.
+                          O/P: 1 1 1 1 1 1 1 1 1 1 1 1 3
+ D) full outer join/Full join: It will give the matching records from both the tables adn unmatched from left table and as well right table.
+                        O/P: 1 1 1 1 1 1 1 1 1 1 1 1 2 3
+8. When we have use volume of data need to perform different types of joins then better to use join stage.
+9. It will store under Harddisc.
+10. for join stage the partition technique will be hash partition based on the key column
+-----------------------------------------------------------------------------------------------------------------------------------------------
+LOOKUP Stage:
+1. It is a processing stage.
+2.It support any number of I/P links and 1 O/P link and 1 reject link.
+3.in this First link we call it as primary/Lookup link[without doted lines] and remaining all we call it as reference links[---------].
+4.Lookup will perform 2 types of joins A} Left Join B}Inner Join.
+     A}To perform this joins we have an option called "Lookup failure" in lookup properties,there are 4 types of lookup failures[Continue,Drop,Reject,Fail]
+	     a) Lookup failure= Continue ,then it acts as [Left join]
+		 b) Lookup Failure= Drop/Reject, then it acts as Inner join.
+		 c) Lookup Failure = Fail ,then if any matching is not found in both tables then job FAIL,. no join will perform here.
+5. For performing Lookup key column is not mandatory.
+6.The data should be in sorted order.
+7.Lookup will perform under RAM.
+8. There 3 types of lookups we have,
+      1) Normal Lookup:
+	     .when we have volume of data is more in primary/Lookup link and less in reference link then we need to use Normal Lookup.
+		 .Normal lookup will support any number of I/P links.
+		 .In Normal lookup we can use any type of Database for reference link and also we can use files as well for the reference link.
+		 .It will give poor performance when volume of data is more in reference link.
+	  2) Sparse Lookup:
+	     .When we have volume of data is less in primary/Lookup link and volume of data is more in reference link then we need to use Sparse lookup for the faster performance.
+		 .In sparse lookup it will support only 2 I/P links, 1 will be primary link and another one is reference.
+		 .In Sparse lookup it will support only databases like oracle/DB2 to the reference link.
+		 .It will give poor performance when we have volume of data is more in primary link.
+	  3) Range Lookup:
+	     . It is same as like Normal lookup but To filter the data in between the range then we need to use range lookup.
+9.Primary link partition technique is hash and for reference link we need to use Entire.
+10.why we need to use entire partition for reference link?
+  Ans: To compare the primary link data with the reference link data it is good to maintain all the data in each nodes.
+11. Lookup stage will give the rejected data of primary link when we select lookup failure = reject.
+---------------------------------------------------------------------------------------------------------------------------------------
+MERGE STAGE:
+1.It si also a processing
+2. It is also used to join the unstaructured data.
+3.It supports Any number of I/P links[1st link main link AND remaining links we call it as update links] and 1 O/P link and then N-1 reject links.
+      Here N means no of update links [3] N-1 then 3-1=2 it means it supports 2 reject link.
+4.Merge stage will perform 2 types of joins. A} Left join B} Inner join.
+     To perform this joines we have an option called " Unmatched master mode" in merge properties, there 2 types of merges.
+	    a) Unmatched master mode = keep , then it is left join
+		b) Unmatched master mode = Drop , then it is inner join.
+5. to work in merge stage we need key column and the data should be sorted order.
+6.The partition technique we use in merge stage is hash /modulus based on your key column.
+7.Merge stage will give the rejected of update link.
+8.Merge stage will store the data in Harddisc.
+9. It is better to use merge stage , that when have volume of data is more and need to find out the rejected data of update links.
+-------------------------------------------------------------------------------------------------------------------------------------
+Q) Difference b/w join lookup and merge?
+Ans) above points which were there in Join lookup and merge.
+
+--------------------------------------------------------------------------------------------------------------------------
+Transformer Stage:
+1. It is a processing stage and it runs on c++ compiler
+2. It supports 1 I/P link and any number of O/P links and 1 Reject link.
+3. By using Transformer stage you can do all the transformations which we did by using different stae like filter, removeduplicate,copy, aggregator etc.
+4. We can add or delete the columns.
+5. In transformer stage we have different type options ie; 
+   a) Stage varibales: It is an intermediate processing variable it doesnot store any data, it is just used for calcultion
+   b)Loop variables: there two types of loops 1) For loop 2) while loop, 
+   c)Constarints: Filtering the data based on the columns ex: ename=Avinash
+   d)Derivations: case condition like switch stage , writing the condition on column.
+6.System varibles: 
+@INROWNUM: To generate sequence number to the source data.
+   EX:10 records 2node configuration
+          5 records 1st nodes
+          5 records 2nd nodes
+O/P Inrownum: 1 2 3 4 5 1 2 3 4 5		  
+@OUTROWNUM:To generate sequence number to the target data
+    EX:10 records 2node configuration
+          5 records 1st nodes
+          5 records 2nd nodes
+O/P Inrownum: 1 2 3 4 5 1 2 3 4 5
+@PARTIONNUM: Partition num will start with 0, 1st node it will be giving as 0 & for node2 it will be giving as 1
+     EX:10 records 2node configuration
+          5 records 1st nodes
+          5 records 2nd nodes
+O/P Inrownum: 1 2 3 4 5 partitionum=0      1 2 3 4 5 Partitionum=1
+@NUMPARTITION: It means howmany node we have in our project , default for us is  2nodes so it will give as 2
+@ITERATION: Looping functionality
+@TRUE:1
+@FALSE:0
+7.DS MAcros: DSJobStartDate,right click---> DS MACRO
+8.Functions: null handing 2) Mathematical Function 3)String 4)Date Functions 5) Converstions 6) string property.
+9. Surrogate key can be generated without using surrogate key stage.
+10.QUSN) what was the exedution flow of transformer stage?
+        Ans: 1st starts from Stage variables, Loop variables, constraints and then Derivation.
+11.Stage variable Execution:
+      by default stage varibale value will be 0 or null.
+	  execution will be top to bottom
+	  10 10 10 30 40 40
+	  Flow: stagevar1= IF Stagevar=No then 0 else 1     --1s execute will be stagevar1
+	        stagevar= No                                --2nd execute stagevar
+			1st execution:
+			stagevar1: if 0=10 else 1
+			stagevar: 10
+			2nd execution:
+			stagevar1: if 10=10 then 0
+            stagevar:10
+            3rd execution:
+            stagevar1: if 10=10 then 0
+            sytagevar: 10
+            4th execution:
+            stagevar1: if 10=30 else 1
+            stagevar: 30
+            5th execution:
+            stagevar1: if 30=40 else 1
+            staevar=40
+            6th execution:
+            stagevar1: if 40=40 then 0
+			
+String functions: Done
+Null Handling: 
+Null Handling: 
+IsNotNull: We can this only with If Then Else, IsNull: If Then Else,NullToEmpy(), NullToValue(),SetNull(),NullToZero()
+Mathematical Functions: Done
+Date Functions: Done
+current_date
+25-10-2020 gregorian
+20265 centurian
+ad
+type conversions: Done
+-------------------------------------------
+Q) How will you delete the duplicates with transformer stage?
+Q) Iterations
+Q)source|destination|distance
+   hyd|ban|1000
+   ban|hyd|1000
+   che|ban|1500
+   ban|che|1500
+   
+   
+   solution: 2stagvar
+   sv: if destination:source = sv1 then 1 else 0
+   sv1: source:destination
+   
+   NO
+   10
+   20
+   10
+   20
+   10
+   30
+   40
+   
+   eid|ename|loc
+   101|Avinash|Vij
+   102|Bhartwaz|Vij1
+   103|Naveen|Nel
+   104|Karimualla|Gun
+   105|raj|Che
+   
+Q3)
+1st Implementation:
+ I need unique records to the target?
+ 
+   NO
+   10
+   20
+   10
+   20
+   10
+   30
+   40
+ Solution:
+ O/p:
+ 10
+ 20
+ 30
+ 40
+
+2nd implememtation:
+O/P
+No  Count
+10   3
+20   2
+30   1
+40   1
+
+3rd Implementation:
+O/P 1:
+30
+40
+
+O/P2:
+10
+10
+10
+20
+20
+-------------------------------------------------------------------------------------------
+
+Development & Debugging stage:
+
+1.Column generator:
+  It will generate the columns for incoming data with mock data.
+  It will support only 1 I/P and 1 O/P link no reject links.
+2.Row Generator:
+   Row generator stage is used for testing purpose with some mock data.
+   
+3.Sample Stage:
+  It will support 1 I/p link and based on your percentage it will suport No of O/P link.
+  It will support 1 I/P link and 1 O/P link when it is like period mode.
+4. peek Stage:
+  It will support 1 I/P link and any num of O/P links.
+  In Peek stage we can view the data in job log level and as well as we can store the data in a file.
+5.Head:
+  It will support only 1 I/P link and one O/P link there is NO reject link.
+  It will give you the O/P of top  N row to the target
+6.Tail:
+  It will support only 1 I/P link and one O/P link there is NO reject link.
+  It will give you the O/P of bottom  N rows to the target
+------------------------------------------------------------------------------------------------------------------------
+ Q)How to export and import the datastage jobs via Datastage and command line? 
+Ans: Designer----->Export--->dsx,xml --->Import
+     Command line: dsexport.exe and   dsimport.exe for importing
+	 
+---------------------------------------------------------------------------------
+Containers:Re usable stage in the datastage job.
+There are two types of containers:
+Local Container: Re usables stages in the datastage job at Job level.
+Shared container: Re usable stages in datasatge job at project level.
+------------------------------------------------------------------------------------------------------------
+SEQUENCERS: Sequencers allows to synchornize the multiple job activities flows.
+
+10 jobs
+job1 ---success job2- should get excute
+
+job1 -->open--->compile--->run--->status[success/fail]
+job2--->open--->compile--->run [[success]
+
+job1---->success--->job2-------->success--->job3
+
+Types of sequence stages:
+1.Job activity
+2.execute command activity
+3.Nested activity
+4.User variable activity
+5.Start loop activity
+6.End loop activity
+7.Routines activity.
+8.Exception handler
+9.WaitForfule activity.
+10.notificaton activity
+11.sequencer
+12.Terminator activity.
+
+
+Trigger conditions:
+conditional, unconditional
+
+
+
+	 
+
+			
+			   
+	  
+         . 	  
+
+		 
+ 
+  
+
+
+
+ 

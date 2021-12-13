@@ -1,0 +1,254 @@
+
+Types of Jobs:
+Server :  These are not into parallelism  technique because it is running on single node, present server jobs are not getting created. The data retriver is slow. Design is bit complicated.
+Parallel: Parallel jobs is nothing but running on multiple nodes based on the partition tecniques which we have given. The data retrive will be faster. Design is easy
+Sequence job: 
+
+----------------------------------------------------------------------------------------------
+Parllelism: the execution job will be parallel mode with partitions.
+Two types of Parallelism:
+PipeLine Parallelism: 1 2 3 4 5 ---->transformer--->load
+Partition Paralleleism: BAased on partition techniques and node configuration our data will be processed to the next level.
+1st check: How many node were there. Ex: 2
+
+2nd check: types of partition techniques
+Ex:
+1
+3
+2
+4
+5
+7
+8
+4
+Key less Partition techniques:
+1.Round robin:  Equal distribution will be happened in Round robin , the records  will stored in b/w the nodes 1 after another
+node1:
+1
+2
+5
+8
+node2:
+3
+4
+7
+4
+
+2.Random: eual distribution will be happened and data will be sent to nodes randomly
+Node1:
+1
+3
+2
+4
+Node2:
+5
+7
+8
+4
+3.Entire: Lokkup stage reference link.
+node1:
+1
+3
+2
+4
+5
+7
+8
+4
+node2:
+1
+3
+2
+4
+5
+7
+8
+8
+4
+
+4.Same: seq--->sort(round robin)--->tra(same)-->target 
+
+Key based:
+
+1
+2
+3
+4
+4
+5
+7
+8
+8
+
+1.Hash: dupliactes
+ any type of key column it might be number or esle bvatchar
+node1:
+1
+3
+5
+8
+8
+node2:
+2
+4
+4
+7
+
+2. Modulus: node1: 0 node2:1 node3:2
+modulus will suport only number key column.
+compared to hash faster when you are key column is number/integer
+mod(1/2) =2/2 0
+ 3/2=1 2nd node
+3.Range=
+4.DB2
+
+
+Default: Auto
+
+Collecting Methods:
+Ordered
+Round robin
+sort merge
+
+default: Auto
+
+------------------------------------------------------------------------------------------------------------------
+APT Configuration File: degree of parallelism , this is heart and soul of datastage
+Default: default.apt : 2nodes 4nodes 
+Structure of configuration file:
+{ 
+node "node1"
+fast name " server name/hostname"
+resource disck
+resource scratch disc
+}
+
+Infromation under configuration file:
+Node information: how many nodes we have in a project
+pool information: which node it is running more
+resource disk: permenent storage for dataset
+resource scratch disch: temporary storage for transformations, it will be empty automatically
+Q) Can we create our own configuration file?
+Yes, Tools--->Configurations--->New
+Q)what is meant by SMP and MPP? How will you find it out that your job is running on SMP or MPP?
+SMP: Symmetric Multi processing, it means it is Shared everything
+If you are fastname is same for all the nodes then we call it has SMP
+MPP: Massive parallel Processing, Shared nothing .
+If your faste name is different for all the nodes then we call it has MPP.
+-----------------------------------------------------------------------------------------------------------------------------------
+Parameters:
+What is meant by parameters and the use parameters, types of parameterS?
+parameter is nothing but to store the default/continuosly repeating values to reduce time consuming.
+There are two types of parameters:
+Job level parameters:  is useful for only particular job.
+project level parameter[parameter sets]: we can use for all the jobs in the project
+-------------------------------------------------------------------------------------------------------------------------------
+Environmental Variables:
+Default environmental varaibels: Project default environmental variables
+Userdefined environmental varaibels: This is created by us
+Q) can we create our own environmental variable?
+A: Yes, we can create Job properties--->Parameters--->bottm lo Add Environmental varaible---->New
+-------------------------------------------------------------------------------------------------------------------
+Importing Metadata[Table definition]:
+Metadata: data about the data
+How to import Table defintions
+----------------------------------------------------------------------------------------------------------------------------
+                                                   File Stages
+Sequential File Stage:
+1.It supports 1 I/P link, 1 O/P link and optional reject link.
+2.To read /write text file,csv files 
+3.The default execution mode of sequential file stge is 'Sequential'.It menas by default it will run on single node.
+4.Q)How can we execute in parallel mode?  
+    Ans) a) Read method= File pattern
+	     b) Read from multiple nodes= No(Default) , if cahnge to Yes then it will change to parallel
+		 c) No of readers per node=1 (Default) , if change to more than 1 then it will change to parallel.
+		 d) if you read multiple files then automatically it will change to parallel.
+5.By default sequential file will not allow null values , to allow null values we have an option called Filed defaults--->Null filed value ' '
+6.we can write unix commands in sequential file stage options--->Filter (unix commands)
+7. it will support properly upto 2GB of data 
+
+Dataset:
+1.it will support 1 I/P link and 1 O/p link , no reject link.
+2.This is datastage tool native format it will save the data in Binary format.
+3.Dataset data will be faster beacuse it runs on parallel mode.
+4.We use dataset has intermediate staging purpose.. source[file] lot of data------->Dataset load[intermediate target]
+                                                    above intermediate target datset as source -----> Final target.
+5.to view our dataset we have Tools---->Dataset management---->we can view our dataset/ resource disk: 
+6.We caan't delete dataset directly beacuse, while creating the dataset it will create 4 files.
+    a) Data File : Data file will be having only the data
+	b)descriptor file: it will be having your schema of the file
+	c) Control file: realted dataset control function
+	d)Header File: only column name.
+7.To delete dataset perminently then we have two approches 1) Tools--->dataset management---->select your dataset---->delete
+                                                           2) By using command prompt/unix: orchadmin rm dataset name.
+8. We can't view the dataset data directly since it is in Binary format, so to view we have command orchadmin dump datasetname filena.txt, Toos--datasetmanegemnt---->dataset view.
+9. The dataset is depenedent on node configurations, for example you have 2 nodes then dataset will create 2 data files.
+10.Extension of dataset is  .ds
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+                                                         DataBase Stages
+Oracle connector stage:
+1.It will support any number of I/P links and no O/p when db as the source and any no of reference link
+2. to read data from a table or to write data to a table.
+3.server name,username, password
+----------------------------------------------------------------------------------------------------------------------------------------------------
+                                                   Processing Stages
+Copy Stage:
+1.It will support 1 I/P link and any Number of O/P links and NO reject links.
+2.It is mainly used to drop the columns,to modify the column names,to modify the datatypes of columns,to add the new columns if required.
+3.Force=False[default] ---->no of o/p performance faster
+  force=true  --->single O/p perfomance should not be decreased.
+4. If i want to do number of transformation but can't be done in the single link then we can use copy stage and then we can connect no of O/P links.
+Types of sorts:
+Sort Stage:
+1.it will support 1 I/P link and 1 O/P link and there NO reject link.
+2.To sort the data we need atleast one key column.
+3.to fetch the results faster.
+4. Options---> create key change column= No, it won't create any new column
+                                       =yes , then it will create a new column as keychange()
+5.sort key mode=sort, previously sorted, if u have usage with create keychange column u can enable but when your sort key mode = previously grouped then u should use create cluster key change column.
+6.All duplicates= True(default) , if i set it False then it will send only 1 record to the target. reatin records will be first record.
+7. sort utility, when it set true means it will not rearranged the sorted data.
+
+Link Sort:
+1. when we have volume of data is less then we can use link sort.
+2.with link sort we can do all the functinlity same as sort stage but memory usage will be less.
+3. Processing stage--->input--->partitioning(Hash)--->key column(sort the data)---->perform sort---->stable/unique.
+4. when perform sort is unique it will give unique records to the target.
+5.when perform sort is stable then it will not sort the data which is in sorted order.
+
+Q)what is the difference b/w link sort and sort stage?
+Ans: link sort and sort stage both the functionality are same but in sort stage we have few options like Restrict memory usage=20mb(default) and create key change column.
+
+Remove Duplicate Stage:
+1.It will support 1 I/P link and 1 O/P link and NO reject link.
+2.Atleast one key column is mandatory.
+3.Mainly remove duplicate is used to work in scd implematation.
+4.Option--->Duplicates retain=first /last 
+  when we are keeping as last then last record will be stayed first record will be deleted.
+Q) How many ways we can remove the duplicates in Datastage?
+Ans:1.sort stage--->Allow dupliactes= false, 2.link sort--->perfrom sort--->unique, 3. Remove duplicate stage, 4. source side(file--->Filter command/database-->distinct function), 5. Transformer stage [[2 stage variables ]].
+
+Filter Stage:
+1.It will support 1 I/P link and any number of O/P and one optional reject link.
+2.Filter stage mainly works with where clause condition.
+3.Your number of O/P links is equal to your number of where clause condition.
+4.we can write our where clause conditions on any number of columns.
+5.Output row only once means it will not send the records which are already processed in some other output.
+
+Switch Stage:
+1.It will support 1 I/P link and upto 128 O/P links and optional reject link.
+2. Switch stage works with CASE function .
+3. we can work on only 1 column with number of case functions.
+4. number of case statements should equal to number of O/P links.
+
+-------------------------------------------------------------------------------------------------------------------------------
+Surrogate Key Generator Stage:
+1.It will 1 I/P link and 1 O/P
+2.Surroage key stage will generate the sequnce number it means no duplicates and all.
+3.It is mainly used to implement SCD2 since insted of using the business for the calculation we enerae sKey to process into fact tables.
+
+----------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+

@@ -1,0 +1,65 @@
+Transformer Stage:
+1.Heart and soul od DataStage Transformations.
+2.It compiles and works on c++ compiler.
+3.It supports only 1 I/P link and any number of O/P links and 1 Optional reject link.
+4.This executes in parallel mode.
+5.To work in Transforer stage we have lot of functionalities.
+   A) Stage Variables: It is an intermediate processing variable it is useful for the calculation but doesn't send to the target columns.
+   B) Loop Variables: by using Iteration
+   C) Constarints: table/file level filtering the data like filter stage where clause.
+   D) Derivations: column level data filtering nothing but switch stage.
+   
+     Q) What the execution flow of Transformer stage?
+	  Ans: Stage variables----->Loop Variables----->Constraints------>Derivations
+6.We can generate surrogate key values from Transformer Stage.
+  Stage Vraible Execution:
+   Table
+   No
+   13
+   13
+   13
+   23
+   44
+   56
+   72
+   72
+   
+   sv = if No=sv1 then 0 else 1
+   sv1 = No
+   stage variables default intial value is 0 or null
+   
+   1st execution:
+   sv = if 13=0 else 1
+   sv1=13
+   2nd execution:
+   sv= if 13=13 then 0
+   sv1=13
+   3rd execution:
+   sv= if 13=13 then 0
+   sv1=13
+   4th execution:
+   sv=if 23=13 else 1
+   sv1=23
+   5th execution:
+   sv= if 44=23 else 1
+   sv1= 44
+   6th execution:
+   sv= if 56=44 else 1
+   sv1=56
+   7th execution:
+   sv=if 72=56 else 1
+   sv1=72
+   8th execution:
+   sv=if 72=72 then 0
+   sv1=72
+9.We have system variables, to provide the system information.
+ Ex: 2node configuration files, data 10 records
+    A)@Inrownum: It will generate the sequence numbers based on node configuration but this is for source data
+	   O/P: 5 records 1 to 5 and remaining 5 records 1to 5
+	B)@Outrownum:It will generate the sequence numbers based on node configuration this is targte data.
+	C)@Iteration: Loop Functionality.
+	D)@NumPartition:2
+	E)@PartitionNum:0 and 1
+	F)@True 1
+	G)@False 0
+   

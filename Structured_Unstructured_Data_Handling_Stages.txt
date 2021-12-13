@@ -1,0 +1,138 @@
+Funnel Stage: sql -- set operators: union,union all,intersect and minus.
+1.It will support any number I/P links and 1 O/P link there is no rejectlinks.
+2.when we have nameof the columns nd number of the columns is equal in all the input source then only we can use funnel stage.
+3.we can work only for the strctured dta.
+4.her teh data will send to the trget with union all unction.
+5.To send the data to the traget we have 3 types of funnels
+     A)Continuous Funnel : it will not follow any order , it means whatever the data process from thesource to funnel first that
+                           will be sent to thetarget.
+     B)Sequence Funel:Based on input link ordering the data will be processed to the target.
+     C)Sort funnel: Based on key column the data will be processed to the target.
+                     File1: 2 3 6  file2: 1 4 5 target : 1 2 3 4 5 6
+
+
+Join/Lookup/Merge: when we have unstructured data it means name of the columns and number of the columnswill not be same butkey clumn 
+                   must be mandatory.
+
+Join Stage:
+1.It will support any number of I/O links and 1 O/P link and no reject link.
+2.To join 2 or more tables/files we need common key column.
+3.To join the tables/files the datashould be in sorted order.
+4.1st link we call it has left link and last link we call it has right link and in between the first and last link wecall it
+  as intermediate links.
+5.By using Join stagewe can do 4 types of joins.
+Ex: TableA:
+  eid,ename,sal
+  101,Siva,2000
+  103,Madhav,3000
+
+TbleB:
+eid,Designation
+101,Consultant
+104,Software ENginerr
+
+     A)Inner join: Matching records from the all the source tables/Files
+     B) Right outer join: Matching records from all the tables/files and unmatchedrecors from the right table.
+     C) Left Ouer join:Matching records from all the tables/files and unmatched recordsfrom the left table
+     D) Full Outer join: Mtching records from all the tables/files and unmatched records rom all the all the tab;es/files.
+6.When we have huge volume of data, then it is good to use join stage.
+7. The datais procesed via join stage will store under harddisc.
+8.Based on key column we will give our partition technique, default hash. It will support hash /modulous
+    Hash: when we have ourkey column with int/string
+   modulous: when our key column is integer.
+9. Inner/left/right joins will support any number of I/P links and 1 O/P link but were as Full outer join will support only 2 I/P links.
+
+Q) Very very imp
+
+ TableA:
+      No
+      1
+      1
+      1
+      1
+
+TableB:
+   No
+   1
+   1
+   1
+   3
+   1
+   1
+   2
+
+O/P
+Inner Join:1 1 1 1 1 1 1 11
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+Lookup Stage: to join unstructured data
+1.It will support any number of input links and 1 O/P and 1 Optional reject link.
+2.1st link we call it primary link  and remaining links we call it as reference links/lookup link.
+main link , reference link : -----------
+3.it is not manadatory to main tain the data in sorted order.
+4.key column is mandatory.
+5.Partition techniques:
+    primary link: hash/modulus
+	refernce link: Entire 
+6. to check the data which is present in primary link will verify the data in reference link so if you are not providing entire partition then the data will be splitted in all the nodes so at that time primary link data comaprision with refernce link will be deficault and processing will be slow.so if you are providing entire partition ten all the data will be in all the nodes so processing will be speed.
+7.lookustage is better when we have volume of data is less since the data is processed via ram
+8.There are 3 types of lookups we can perform in lookup stage.
+     A) Normal Lookup: 
+	    1.when we have volume of data is more in primary link compared to refernce link then it is better to use Normal lookup.
+		2.It will support support number of I/P links.
+		3.we can use any types of sources for the refernce link in nOrmal lookup.
+	 B) Sparse Lookup:
+	    1.When we have volume of data is more in reference link compared to primary link.
+		2. It will support only 2 I/P links.
+		3. In sparse lookup refence link will support only oracle /db2.
+		
+	 C) Range Lookup:
+	     if you want provide any range to process the data to the target.
+9.lookup stage we have property called "Multiple Rows returned from a link"--- it will show the refernce link
+  If you are keeping "Multiple Rows returned from a link" is empty oit means whatever the matching records ARE THERe from the primary link will be processed to the atrget.
+10. Lookup will support only 2 types of joins:
+     A)Left outer join :In lookup stage properties---->lookup failure= continue
+	 B)Inner join: Lookup fialure= drop/reject 
+	 lookupfialure=fail
+11.it will give u the primary link rejected data. [ It means the primary link data which is not matching with reference link data then the primary link data will send it reject link].
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+Merge Stage: unstructured data handling
+1.It will support any number of I/P links and 1 O/P link and N-1 Reject Links.
+2.1st link we call it as master link, reamining links we call it as update links.
+3.N-1 reject links means ut is dependent on your update links.
+4.Partition Technique: Hash/Modulus
+5.Key column is must and should
+6.Data should be in sorting order.
+7.Merge is better when we have large volume of data since it uses harddisc.
+8.It supports only 2 types of joins, 
+     when "Unmatched master mode= keep"  ----->Left outer join
+	      "Unmatched master mode= Drop"  ------>Inner join.
+9.It will give u the updated links rejected data.
+
+Q) Difference b/w join , lookup and merge?
+
+	join				lookup					Merge				
+1	"It will support all types of joins
+left,right,inner,fullouter"				"It will support 2 types of joins
+Lookup failure= continue ,then left join
+Lookup failure= Drop/reject then inner join"					"It suuports only 2 types of joins
+Unmatched master mode=keep ,left join
+Unmatched master mode = drop , inner join"				
+2	Key column is mandatory				Key column is no mandatory , mapping will done					Mandatory				
+3	the data should be in sorted order				It is not mandatory that the data should be in sorted order					The data should be in sorted order				
+4	Join stage will story under memory				stores under ram					Memory				
+5	It is good to use when we have huge volume of data				it is good to use when we have volume of data is less					Volume of data is huge				
+6	Partition technique: Hash/Modulus				"Primary link: hash/modulus ; lookup link: entire
+"					Partition technique: Hash/Modulus				
+7	It will not support reject links				It will support 1 reject link					It will support N-1 reject link				
+8	It will support any number of I/P links and 1 O/P link				"it will support any number I/P link but 1st link we call it as Primary
+link and reamining all lookup links."					"It will spport any number of I/P links 
+first link : Master link and remaining links : updated links"	
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------			
+
+
+
+
+                
